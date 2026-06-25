@@ -143,6 +143,9 @@ pnpm run build
 python3 -m py_compile server/fastapi-main.py
 ```
 
+Backend translation uses `OPENAI_API_KEY` by default. The legacy
+`OPEN_AI_API_KEY` name is still accepted as a fallback.
+
 ## Safety Notes
 
 - This project is intended for local use.
