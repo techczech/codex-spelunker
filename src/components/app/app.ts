@@ -3091,15 +3091,32 @@ export class EuphonyApp extends LitElement {
     }
 
     try {
-      const response = await this.apiManager.getJSONL({
-        blobURL: this.buildLocalCodexProjectListBlobURL(),
-        offset: 0,
-        limit: 200,
-        noCache: false,
-        jmespathQuery: ''
-      });
-      const data = response.data as Record<string, unknown>[];
-      this.localProjectSummaries = data.filter(isCodexProjectSummaryEntry);
+      const blobURL = this.buildLocalCodexProjectListBlobURL();
+      const pageSize = 200;
+      const projects: (Record<string, unknown> & CodexProjectSummaryEntry)[] = [];
+      let offset = 0;
+      let total = Number.POSITIVE_INFINITY;
+
+      while (offset < total) {
+        const response = await this.apiManager.getJSONL({
+          blobURL,
+          offset,
+          limit: pageSize,
+          noCache: false,
+          jmespathQuery: ''
+        });
+        const data = response.data as Record<string, unknown>[];
+        const pageProjects = data.filter(isCodexProjectSummaryEntry);
+        projects.push(...pageProjects);
+
+        total = response.total;
+        if (data.length === 0 || response.total <= offset + data.length) {
+          break;
+        }
+        offset += data.length;
+      }
+
+      this.localProjectSummaries = projects;
     } catch (_error) {
       this.localProjectSummaries = [];
     }
